@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Game | Azka Arcade</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+/* BACKGROUND */
+
+body{
+background:linear-gradient(135deg,#020617,#0f172a,#020617);
+color:white;
+text-align:center;
+min-height:100vh;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+overflow-x:hidden;
+}
+
+/* STAR ANIMATION */
+
+body::before{
+content:"";
+position:fixed;
+width:100%;
+height:100%;
+background-image:radial-gradient(white 1px,transparent 1px);
+background-size:40px 40px;
+opacity:0.15;
+animation:stars 60s linear infinite;
+z-index:-1;
+}
+
+@keyframes stars{
+from{transform:translateY(0)}
+to{transform:translateY(-1000px)}
+}
+
+/* TITLE */
+
+h1{
+font-size:45px;
+margin-bottom:10px;
+background:linear-gradient(90deg,#38bdf8,#22c55e);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+/* INFO */
+
+.info{
+color:#94a3b8;
+margin-bottom:15px;
+}
+
+.moves{
+margin-bottom:20px;
+font-size:18px;
+}
+
+/* GAME GRID */
+
+.game{
+display:grid;
+grid-template-columns:repeat(4,100px);
+gap:15px;
+margin-bottom:25px;
+}
+
+/* CARD */
+
+.card{
+width:100px;
+height:100px;
+background:#1e293b;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:35px;
+cursor:pointer;
+transition:0.25s;
+box-shadow:0 8px 20px rgba(0,0,0,0.6);
+}
+
+.card:hover{
+transform:scale(1.08);
+background:#0ea5e9;
+box-shadow:0 0 15px #0ea5e9;
+}
+
+/* BUTTON */
+
+button{
+padding:12px 25px;
+border:none;
+border-radius:10px;
+background:#0ea5e9;
+color:white;
+font-size:16px;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+transform:scale(1.1);
+background:#38bdf8;
+}
+
+/* BACK */
+
+.back{
+margin-top:20px;
+text-decoration:none;
+color:#94a3b8;
+}
+
+.back:hover{
+color:white;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+h1{
+font-size:32px;
+}
+
+.game{
+grid-template-columns:repeat(4,70px);
+gap:10px;
+}
+
+.card{
+width:70px;
+height:70px;
+font-size:25px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🧠 Memory Game</h1>
+<p class="info">Temukan pasangan kartu yang sama</p>
+
+<div class="moves">
+Moves: <span id="moves">0</span>
+</div>
+
+<div class="game" id="game"></div>
+
+<button onclick="startGame()">Reset Game</button>
+
+<a class="back" href="../index.html">⬅ Back to Azka Arcade</a>
+
+<!-- AUDIO -->
+<audio id="flipSound" src="../assets/sound/flip.mp3"></audio>
+<audio id="winSound" src="../assets/sound/win.mp3"></audio>
+
+<script>
+
+let emojis=[
+"🐱","🐱",
+"🐶","🐶",
+"🐼","🐼",
+"🐸","🐸",
+"🐵","🐵",
+"🦊","🦊",
+"🐰","🐰",
+"🐯","🐯"
+];
+
+let game=document.getElementById("game");
+
+let firstCard=null;
+let secondCard=null;
+let lock=false;
+let moves=0;
+
+function shuffle(array){
+return array.sort(()=>0.5-Math.random());
+}
+
+function startGame(){
+
+game.innerHTML="";
+moves=0;
+document.getElementById("moves").textContent=0;
+
+let shuffled=shuffle([...emojis]);
+
+shuffled.forEach(emoji=>{
+
+let card=document.createElement("div");
+card.classList.add("card");
+
+card.dataset.emoji=emoji;
+card.textContent="?";
+
+card.addEventListener("click",flipCard);
+
+game.appendChild(card);
+
+});
+
+}
+
+function flipCard(){
+
+if(lock) return;
+if(this.textContent!=="?") return;
+
+let flip=document.getElementById("flipSound");
+flip.currentTime=0;
+flip.play();
+
+this.textContent=this.dataset.emoji;
+
+if(!firstCard){
+
+firstCard=this;
+
+}else{
+
+secondCard=this;
+lock=true;
+moves++;
+
+document.getElementById("moves").textContent=moves;
+
+checkMatch();
+
+}
+
+}
+
+function checkMatch(){
+
+if(firstCard.dataset.emoji===secondCard.dataset.emoji){
+
+firstCard=null;
+secondCard=null;
+lock=false;
+
+checkWin();
+
+}else{
+
+setTimeout(()=>{
+
+firstCard.textContent="?";
+secondCard.textContent="?";
+
+firstCard=null;
+secondCard=null;
+lock=false;
+
+},800);
+
+}
+
+}
+
+function checkWin(){
+
+let cards=document.querySelectorAll(".card");
+
+let win=[...cards].every(card=>card.textContent!=="?");
+
+if(win){
+
+let winSound=document.getElementById("winSound");
+winSound.currentTime=0;
+winSound.play();
+
+setTimeout(()=>{
+alert("🎉 Kamu menang dalam "+moves+" moves!");
+},300);
+
+}
+
+}
+
+startGame();
+
+</script>
+
+</body>
+</html>
